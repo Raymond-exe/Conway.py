@@ -36,7 +36,7 @@ def updateZoom(event):
     zoom += event.delta
     zoom = min(zoom, MAX_ZOOM)
     zoom = max(zoom, MIN_ZOOM)
-    draw_grid()
+    drawGrid()
 
 prev_grid = (0, 0)
 def userClicked(event):
@@ -49,7 +49,7 @@ def userClicked(event):
     else:
         active_cells.add(cell)
     prev_grid = cell
-    draw_grid()
+    drawGrid()
 
 def userDraggedLeft(event):
     global prev_grid
@@ -68,7 +68,7 @@ def userDraggedRight(event):
 active_cells = set() # each active cell is stored as a tuple
 
 # TODO make this work
-def draw_grid():
+def drawGrid():
     canvas.delete("all")
     width = canvas.winfo_width()
     height = canvas.winfo_height()
@@ -76,7 +76,7 @@ def draw_grid():
     # draw vertical lines
     for x in range(0, width, zoom):
         canvas.create_line(x, 0, x, height, fill=color_lines, width=1)
-    
+
     # draw horizontal lines
     for y in range(0, height, zoom):
         canvas.create_line(0, y, width, y, fill=color_lines, width=1)
@@ -90,35 +90,37 @@ def getNeighbors(cell):
     for x in range(cell[0]-1, cell[0]+2):
         for y in range(cell[1]-1, cell[1]+2):
             neighbors.add((x, y))
-    print("Number of neighbors created (should be 9):", len(neighbors))
     return neighbors
 
-def countNeighbors(cell):
-    count = 0
-    for x in range(cell[0]-1, cell[0]+2):
-        for y in range(cell[1]-1, cell[1]+2):
-            if (x, y) in active_cells:
-                count += 1
-    return count
+def countLiving(cellSet):
+    living = 0
+    for cell in cellSet:
+        if cell in active_cells:
+            living += 1
+    return living
 
-def update_grid(event):
+def updateGrid(event):
     global active_cells
     nextGen = set()
     for cell in active_cells:
         neighbors = getNeighbors(cell)
+        liveNeighbors = countLiving(neighbors)-1 # this -1 is to avoid counting this cell itself
 
         # life loop: decides if a cell should be brought to life
         for n in neighbors:
-            count = countNeighbors(n)
-            if count == 2 or count == 3:
+            if n not in active_cells and countLiving(getNeighbors(n)) == 3:
                 nextGen.add(n)
 
+        # death loop: decides if a cell should die
+        if liveNeighbors == 2 or liveNeighbors == 3:
+            nextGen.add(cell)
+
     active_cells = nextGen
-    print(event)
-    draw_grid()
+    print("Active cells: ", len(active_cells))
+    drawGrid()
 
 
-draw_grid()
+drawGrid()
 
 canvas.bind("<Button-1>", userClicked) # left-click
 canvas.bind("<B1-Motion>", userDraggedLeft) # left-click drag
@@ -127,6 +129,6 @@ tk.bind("<MouseWheel>", updateZoom) # Windows
 tk.bind("<Button-4>", updateZoom)   # Linux
 tk.bind("<Button-5>", updateZoom)   # Linux
 
-tk.bind("<space>", update_grid)
+tk.bind("<space>", updateGrid)
 
 tk.mainloop()
