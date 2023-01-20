@@ -63,13 +63,6 @@ def userDraggedLeft(event):
 def userDraggedRight(event):
     print((event.x, event.y))
 
-canvas.bind("<Button-1>", userClicked) # left-click
-canvas.bind("<B1-Motion>", userDraggedLeft) # left-click drag
-canvas.bind("<B2-Motion>", userDraggedRight) # right-click drag (move view)
-tk.bind("<MouseWheel>", updateZoom) # Windows
-tk.bind("<Button-4>", updateZoom)   # Linux
-tk.bind("<Button-5>", updateZoom)   # Linux
-
 #################### GRID SETUP ####################
 
 active_cells = set() # each active cell is stored as a tuple
@@ -92,16 +85,48 @@ def draw_grid():
         canvas.create_rectangle(cell[0]*zoom, cell[1]*zoom, (cell[0]+1)*zoom, (cell[1]+1)*zoom, fill=color_cells, outline=color_lines)
 
 
-def countNeighbors(self, cell):
-    cell
+def getNeighbors(cell):
+    neighbors = set()
+    for x in range(cell[0]-1, cell[0]+2):
+        for y in range(cell[1]-1, cell[1]+2):
+            neighbors.add((x, y))
+    print("Number of neighbors created (should be 9):", len(neighbors))
+    return neighbors
 
-def update_grid():
+def countNeighbors(cell):
+    count = 0
+    for x in range(cell[0]-1, cell[0]+2):
+        for y in range(cell[1]-1, cell[1]+2):
+            if (x, y) in active_cells:
+                count += 1
+    return count
+
+def update_grid(event):
+    global active_cells
+    nextGen = set()
     for cell in active_cells:
-        neighbors = countNeighbors(cell)
-    # TODO make this work
+        neighbors = getNeighbors(cell)
+
+        # life loop: decides if a cell should be brought to life
+        for n in neighbors:
+            count = countNeighbors(n)
+            if count == 2 or count == 3:
+                nextGen.add(n)
+
+    active_cells = nextGen
+    print(event)
     draw_grid()
 
 
 draw_grid()
+
+canvas.bind("<Button-1>", userClicked) # left-click
+canvas.bind("<B1-Motion>", userDraggedLeft) # left-click drag
+canvas.bind("<B2-Motion>", userDraggedRight) # right-click drag (move view)
+tk.bind("<MouseWheel>", updateZoom) # Windows
+tk.bind("<Button-4>", updateZoom)   # Linux
+tk.bind("<Button-5>", updateZoom)   # Linux
+
+tk.bind("<space>", update_grid)
 
 tk.mainloop()
