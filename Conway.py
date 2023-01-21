@@ -119,6 +119,11 @@ def updateGrid(event):
     print("Active cells: ", len(active_cells))
     drawGrid()
 
+def reset(event):
+    global active_cells
+    active_cells = set()
+    drawGrid()
+
 
 drawGrid()
 
@@ -130,5 +135,6 @@ tk.bind("<Button-4>", updateZoom)   # Linux
 tk.bind("<Button-5>", updateZoom)   # Linux
 
 tk.bind("<space>", updateGrid)
+tk.bind("r", reset)
 
 tk.mainloop()
