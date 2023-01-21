@@ -13,24 +13,23 @@ color_cells = "white"
 
 
 #################### FRAME SETUP ####################
-
 tk.title("Conway.py  |  A Python simulation of Conway's Game of Life")
 frame = tkinter.Frame(bg=color_background, width=750, height=500, bd=0)
 frame.pack()
 
 
 #################### CANVAS SETUP ####################
-
 canvas = tkinter.Canvas(frame, bg=color_background, width=750, height=500)
 canvas.pack()
 
 
 #################### ZOOM SETUP ####################
-
 zoom = 10 # zoom resolution of the grid
 MIN_ZOOM = 5
 MAX_ZOOM = 250
+viewport_location = (0, 0)
 
+# TODO zoom relative to viewport, not world
 def updateZoom(event):
     global zoom
     zoom += event.delta
@@ -38,30 +37,55 @@ def updateZoom(event):
     zoom = max(zoom, MIN_ZOOM)
     drawGrid()
 
-prev_grid = (0, 0)
-def userClicked(event):
-    global prev_grid
-    gridX = floor(event.x / zoom)
-    gridY = floor(event.y / zoom)
-    cell = (gridX, gridY)
-    if cell in active_cells:
-        active_cells.remove(cell)
-    else:
-        active_cells.add(cell)
-    prev_grid = cell
+def roundTo(roundee, rounder):
+    return rounder * round(roundee/rounder)
+
+
+#################### CELL TOGGLING SETUP ####################
+prev_cell = (0, 0)
+def userLeftClicked(event):
+    global prev_cell
+    event.x -= viewport_location[0]
+    event.y -= viewport_location[1]
+    cell = (floor(event.x / zoom), floor(event.y / zoom))
+
+    # Sometimes I love python
+    active_cells.remove(cell) if cell in active_cells else active_cells.add(cell)
+
+    prev_cell = cell
     drawGrid()
 
 def userDraggedLeft(event):
-    global prev_grid
-    gridX = floor(event.x / zoom)
-    gridY = floor(event.y / zoom)
-    grid_cell = (gridX, gridY)
-    if (prev_grid != grid_cell):
-        userClicked(event)
-        prev_grid = grid_cell
+    global prev_cell
+    x = event.x - viewport_location[0]
+    y = event.y - viewport_location[1]
+    gridX = floor(x / zoom)
+    gridY = floor(y / zoom)
+    if (prev_cell != (gridX, gridY)):
+        userLeftClicked(event)
 
+
+#################### RIGHT-CLICK DRAG MOVEMENT SETUP ####################
+
+right_click = False # True if right click was already being held down
+prev_right_click_location = (0, 0)
 def userDraggedRight(event):
-    print((event.x, event.y))
+    global right_click, prev_right_click_location, viewport_location
+
+    if (not right_click):
+        right_click = True
+    else:
+        delta = (event.x - prev_right_click_location[0], event.y - prev_right_click_location[1])
+        viewport_location = (viewport_location[0] + delta[0], viewport_location[1] + delta[1])
+
+    prev_right_click_location = (event.x, event.y)
+    drawGrid()
+
+def userReleasedRightClick(event):
+    global right_click
+    right_click = False
+    drawGrid()
+
 
 #################### GRID SETUP ####################
 
@@ -74,15 +98,25 @@ def drawGrid():
     height = canvas.winfo_height()
 
     # draw vertical lines
-    for x in range(0, width, zoom):
+    for x in range(viewport_location[0]%zoom - zoom, viewport_location[0]%zoom + width, zoom):
         canvas.create_line(x, 0, x, height, fill=color_lines, width=1)
 
     # draw horizontal lines
-    for y in range(0, height, zoom):
+    for y in range(viewport_location[1]%zoom - zoom, viewport_location[1]%zoom + height, zoom):
         canvas.create_line(0, y, width, y, fill=color_lines, width=1)
 
+    # draw X & Y axis
+    canvas.create_line(0, viewport_location[1], width, viewport_location[1], fill="red", width=1) # x-axis
+    canvas.create_line(viewport_location[0], 0, viewport_location[0], height, fill="lime green", width=1) # y-axis
+
+    # draw cells from active_cells set
     for cell in active_cells:
-        canvas.create_rectangle(cell[0]*zoom, cell[1]*zoom, (cell[0]+1)*zoom, (cell[1]+1)*zoom, fill=color_cells, outline=color_lines)
+        canvas.create_rectangle(
+            viewport_location[0] + cell[0]*zoom,     # left edge
+            viewport_location[1] + cell[1]*zoom,     # top edge
+            viewport_location[0] + (cell[0]+1)*zoom, # right edge
+            viewport_location[1] + (cell[1]+1)*zoom, # bottom edge
+            fill=color_cells, outline=color_lines)
 
 
 def getNeighbors(cell):
@@ -99,6 +133,7 @@ def countLiving(cellSet):
             living += 1
     return living
 
+# TODO optimize
 def updateGrid(event):
     global active_cells
     nextGen = set()
@@ -116,20 +151,23 @@ def updateGrid(event):
             nextGen.add(cell)
 
     active_cells = nextGen
-    print("Active cells: ", len(active_cells))
+    # print("Active cells: ", len(active_cells))
     drawGrid()
 
 def reset(event):
-    global active_cells
+    global active_cells, viewport_location
     active_cells = set()
+    viewport_location = (0, 0)
     drawGrid()
 
 
 drawGrid()
 
-canvas.bind("<Button-1>", userClicked) # left-click
+#################### EVENT BINDINGS ####################
+canvas.bind("<Button-1>", userLeftClicked) # left-click
 canvas.bind("<B1-Motion>", userDraggedLeft) # left-click drag
 canvas.bind("<B2-Motion>", userDraggedRight) # right-click drag (move view)
+canvas.bind("<ButtonRelease-2>", userReleasedRightClick) # right-click mouseup
 tk.bind("<MouseWheel>", updateZoom) # Windows
 tk.bind("<Button-4>", updateZoom)   # Linux
 tk.bind("<Button-5>", updateZoom)   # Linux
