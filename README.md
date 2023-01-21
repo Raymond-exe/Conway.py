@@ -1,5 +1,35 @@
-# Conway.py
+# **Conway.py**
+##### *A Python simulation of Conway's Game of Life*
+> **Notice:** This repository is a work-in-progress. Several features are still missing and opimizations have yet to be done. Any pre-releases published are *not* representative of the final project.
 
-An rough interactive simulation of Conway's Game of Life, written in Python.
+<br>
 
-This is a work-in-progress, while the simulation can run I plan on adding viewport mobility controls and several other customization options before calling this project "complete"
+## Basics of Conway's Game of Life
+Conway's Game of Life is a cell-based simulation of "life" which consists of 4 basic rules:
+- Any living cell with 2 or 3 living neighbors stays alive.
+- A living cell without exactly 2 or 3 neighbors dies the next generation.
+- Any dead cell with exactly 3 living neighbors is revived.
+##### **More information about Conway's Game of Life can be found on [Wikipedia](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life)*
+
+<br>
+
+## Controls
+| **Input** | **Action** |
+| --------- | ---------- |
+| `Left-click` | Toggle cell *(kill/create)* |
+| `Right-click` | Drag to move viewport |
+| `Spacebar` | Skip to next generation |
+| `R` | Reset simulation |
+
+<br>
+
+## TODO
+Features:
+- [X] Accurate simulation rules
+- [X] X/Y Axis
+- [X] Movable viewport
+- [ ] Add "ghost" effect option for prior generations
+- [ ] Add UI buttons below simulation canvas for pause/play.
+- [ ] Add UI buttons for speed control.
+- [ ] Customizable color themes
+- [ ] "Old" screen effects + viewport warp?
