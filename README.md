@@ -18,6 +18,7 @@ Conway's Game of Life is a cell-based simulation of "life" which consists of 4 b
 | --------- | ---------- |
 | `Left-click` | Toggle cell *(kill/create)* |
 | `Right-click` | Drag to move viewport |
+| `Scrollwheel` | Zoom in/out |
 | `Spacebar` | Skip to next generation |
 | `R` | Reset simulation |
 
@@ -25,11 +26,14 @@ Conway's Game of Life is a cell-based simulation of "life" which consists of 4 b
 
 ## TODO
 Features:
-- [X] Accurate simulation rules
-- [X] X/Y Axis
-- [X] Movable viewport
-- [ ] Add "ghost" effect option for prior generations
+- [X] Accurate simulation rules.
+- [X] X/Y Axis.
+- [X] Movable viewport.
+- [ ] Add "ghost" effect option for prior generations.
 - [ ] Add UI buttons below simulation canvas for pause/play.
 - [ ] Add UI buttons for speed control.
-- [ ] Customizable color themes
+- [ ] Customizable color themes.
 - [ ] "Old" screen effects + viewport warp?
+
+Bugs:
+- [ ] Zoom scales viewport relative to world, not relative to viewport.
