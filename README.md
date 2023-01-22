@@ -33,7 +33,9 @@ Features:
 - [ ] Add UI buttons below simulation canvas for pause/play.
 - [ ] Add UI buttons for speed control.
 - [ ] Customizable color themes.
+- [ ] Screen-space rendering
 - [ ] "Old" screen effects + viewport warp?
 
 Bugs:
 - [ ] Zoom scales viewport relative to world, not relative to viewport.
+- [ ] Optimize rendering function for better performance
