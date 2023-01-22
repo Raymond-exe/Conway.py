@@ -1,15 +1,23 @@
 from math import floor
 import tkinter
 
-tk = tkinter.Tk()
-
+# Color options
 color_background = "dim gray"
 color_lines = "gray"
 color_cells = "white"
 
+# Ghost options
+ghost = False
+color_ghosts = [
+    "light gray",
+    "dark gray"
+]
+
 # quick reference resources
 # https://pythonbasics.org/tkinter-canvas/
 # https://beltoforion.de/en/game_of_life/
+
+tk = tkinter.Tk()
 
 
 #################### FRAME SETUP ####################
@@ -19,13 +27,13 @@ frame.pack()
 
 
 #################### CANVAS SETUP ####################
-canvas = tkinter.Canvas(frame, bg=color_background, width=750, height=500)
+canvas = tkinter.Canvas(frame, bg=color_background, width=750, height=500, highlightthickness=3, highlightbackground=color_lines)
 canvas.pack()
 
 
 #################### ZOOM SETUP ####################
-zoom = 10 # zoom resolution of the grid
-MIN_ZOOM = 5
+zoom = 25 # zoom resolution of the grid
+MIN_ZOOM = 1
 MAX_ZOOM = 250
 viewport_location = (0, 0)
 
@@ -90,20 +98,24 @@ def userReleasedRightClick(event):
 #################### GRID SETUP ####################
 
 active_cells = set() # each active cell is stored as a tuple
+ghost_cells_1 = set()
+ghost_cells_2 = set()
 
 # TODO make this work
 def drawGrid():
+    global canvas, viewport_location, active_cells, ghost_cells_1, ghost_cells_2, zoom
     canvas.delete("all")
     width = canvas.winfo_width()
     height = canvas.winfo_height()
 
-    # draw vertical lines
-    for x in range(viewport_location[0]%zoom - zoom, viewport_location[0]%zoom + width, zoom):
-        canvas.create_line(x, 0, x, height, fill=color_lines, width=1)
+    if zoom > 4:
+        # draw vertical lines
+        for x in range(viewport_location[0]%zoom - zoom, viewport_location[0]%zoom + width, zoom):
+            canvas.create_line(x, 0, x, height, fill=color_lines, width=1)
 
-    # draw horizontal lines
-    for y in range(viewport_location[1]%zoom - zoom, viewport_location[1]%zoom + height, zoom):
-        canvas.create_line(0, y, width, y, fill=color_lines, width=1)
+        # draw horizontal lines
+        for y in range(viewport_location[1]%zoom - zoom, viewport_location[1]%zoom + height, zoom):
+            canvas.create_line(0, y, width, y, fill=color_lines, width=1)
 
     # draw X & Y axis
     canvas.create_line(0, viewport_location[1], width, viewport_location[1], fill="red", width=1) # x-axis
@@ -116,7 +128,31 @@ def drawGrid():
             viewport_location[1] + cell[1]*zoom,     # top edge
             viewport_location[0] + (cell[0]+1)*zoom, # right edge
             viewport_location[1] + (cell[1]+1)*zoom, # bottom edge
-            fill=color_cells, outline=color_lines)
+            fill=color_cells, outline=color_lines if zoom > 1 else color_cells)
+
+    if not ghost: return
+    for cell in ghost_cells_1:
+        if cell in active_cells:
+            continue
+
+        canvas.create_rectangle(
+            viewport_location[0] + cell[0]*zoom,     # left edge
+            viewport_location[1] + cell[1]*zoom,     # top edge
+            viewport_location[0] + (cell[0]+1)*zoom, # right edge
+            viewport_location[1] + (cell[1]+1)*zoom, # bottom edge
+            fill=color_ghosts[0], outline=color_lines if zoom > 1 else color_cells)
+
+    for cell in ghost_cells_2:
+        if cell in active_cells or cell in ghost_cells_1:
+            continue
+
+        canvas.create_rectangle(
+            viewport_location[0] + cell[0]*zoom,     # left edge
+            viewport_location[1] + cell[1]*zoom,     # top edge
+            viewport_location[0] + (cell[0]+1)*zoom, # right edge
+            viewport_location[1] + (cell[1]+1)*zoom, # bottom edge
+            fill=color_ghosts[1], outline=color_lines)
+
 
 
 def getNeighbors(cell):
@@ -135,7 +171,7 @@ def countLiving(cellSet):
 
 # TODO optimize
 def updateGrid(event):
-    global active_cells
+    global active_cells, ghost_cells_1, ghost_cells_2
     nextGen = set()
     for cell in active_cells:
         neighbors = getNeighbors(cell)
@@ -150,18 +186,21 @@ def updateGrid(event):
         if liveNeighbors == 2 or liveNeighbors == 3:
             nextGen.add(cell)
 
+    ghost_cells_2 = ghost_cells_1
+    ghost_cells_1 = active_cells
     active_cells = nextGen
     # print("Active cells: ", len(active_cells))
     drawGrid()
 
 def reset(event):
-    global active_cells, viewport_location
+    global active_cells, viewport_location, ghost_cells_1, ghost_cells_2, canvas, zoom
+    ghost_cells_1 = set()
+    ghost_cells_2 = set()
     active_cells = set()
-    viewport_location = (0, 0)
+    zoom = 25
+    viewport_location = (round(canvas.winfo_width()/2), round(canvas.winfo_height()/2))
     drawGrid()
 
-
-drawGrid()
 
 #################### EVENT BINDINGS ####################
 canvas.bind("<Button-1>", userLeftClicked) # left-click

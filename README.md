@@ -29,7 +29,7 @@ Features:
 - [X] Accurate simulation rules.
 - [X] X/Y Axis.
 - [X] Movable viewport.
-- [ ] Add "ghost" effect option for prior generations.
+- [X] Add "ghost" effect option for prior generations.
 - [ ] Add UI buttons below simulation canvas for pause/play.
 - [ ] Add UI buttons for speed control.
 - [ ] Customizable color themes.
@@ -38,5 +38,5 @@ Features:
 
 Bugs:
 - [ ] Zoom scales viewport relative to world, not relative to viewport.
-- [ ] Optimize active_cells set management
+- [ ] Optimize `active_cells` set management
 - [ ] Optimize rendering function for better performance
