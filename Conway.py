@@ -42,23 +42,28 @@ def scalePointFrom(pt, origin, scale):
     y = scale * (pt[1] - origin[1]) + origin[1]
     return (round(x), round(y))
 
-# TODO zoom relative to viewport, not world
 def updateZoom(event):
-    global zoom, viewport_location, canvas
+    global canvas, viewport_location, zoom
+
+    # change zoom
     old = zoom
     zoom += event.delta
     zoom = min(zoom, MAX_ZOOM)
     zoom = max(zoom, MIN_ZOOM)
     ratio = zoom / old
 
-    # move viewport to keep camera in the same place
+    # move viewport location to keep camera in the same place
+    viewport_location = scalePointFrom(viewport_location, (0, 0), ratio)
+
+    # scale viewport location relative to the actual center of the viewport
     screen = (canvas.winfo_width(), canvas.winfo_height())
     center = (
-        round(viewport_location[0] + screen[0]/2), # X
-        round(viewport_location[1] + screen[1]/2)  # Y
+        (viewport_location[0] + screen[0]/2), # X
+        (viewport_location[1] + screen[1]/2)  # Y
     )
-    viewport_location = scalePointFrom(viewport_location, (0, 0), ratio)
-    # viewport_location = scalePointFrom(viewport_location, center, ratio)
+    viewport_location = scalePointFrom(viewport_location, center, ratio)
+
+    # draw grid
     drawGrid()
 
 def roundTo(roundee, rounder):
