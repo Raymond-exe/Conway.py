@@ -89,22 +89,38 @@ def fillCellsBetween(a, b):
         x = b[0] - a[0]
         y = b[1] - a[1]
         return sqrt(x*x + y*y)
-    def normalize(vect):
+    def normalize(vect, dimension = ''):
         len = distanceBetween((0,0), vect)
-        return (vect[0] / len, vect[1] / len)
+        norm = (vect[0] / len, vect[1] / len)
+        if dimension:
+            x = 1 if dimension == 'x' else norm[0] / norm[1]
+            y = 1 if dimension == 'y' else norm[1] / norm[0]
+            return (x, y)
+        else:
+            return norm
 
     if distanceBetween(a, b) < 2: return
     slope2d = (
         b[0] - a[0], # X
         b[1] - a[1]  # Y
     )
-    array = range(max(slope2d[0], slope2d[1]))
-    slope2d = normalize(slope2d)
-    for index in array:
-        active_cells.add((
-            floor(index * slope2d[0]) + a[0],
-            floor(index * slope2d[1]) + a[1]
-        ))
+    wider = (abs(slope2d[0]) > abs(slope2d[1]))
+    normal = normalize(slope2d, 'x' if wider else 'y')
+    counter = 0
+    if wider:
+        for index in range(0, slope2d[0], 1 if slope2d[0] > 0 else -1):
+            active_cells.add((
+                round(index * normal[0]) + a[0],
+                round(index * normal[1]) + a[1]
+            ))
+            counter += 1
+    else:
+        for index in range(0, slope2d[1], 1 if slope2d[1] > 0 else -1):
+            active_cells.add((
+                round(index * normal[0]) + a[0],
+                round(index * normal[1]) + a[1]
+            ))
+            counter += 1
 
 def userDraggedLeft(event):
     global prev_cell
@@ -113,7 +129,7 @@ def userDraggedLeft(event):
     gridX = floor(x / zoom)
     gridY = floor(y / zoom)
     if (prev_cell != (gridX, gridY)):
-        # fillCellsBetween(prev_cell, (gridX, gridY))
+        fillCellsBetween(prev_cell, (gridX, gridY))
         userLeftClicked(event)
 
 
