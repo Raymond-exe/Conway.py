@@ -1,4 +1,4 @@
-from math import floor
+from math import floor, sqrt
 import tkinter
 
 # Color options
@@ -84,6 +84,29 @@ def userLeftClicked(event):
     prev_cell = cell
     drawGrid()
 
+# TODO make this work
+def fillCellsBetween(a, b):
+    def distanceBetween(a, b):
+        x = b[0] - a[0]
+        y = b[1] - a[1]
+        return sqrt(x*x + y*y)
+    def normalize(vect):
+        len = distanceBetween((0,0), vect)
+        return (vect[0] / len, vect[1] / len)
+
+    if distanceBetween(a, b) < 2: return
+    slope2d = (
+        b[0] - a[0], # X
+        b[1] - a[1]  # Y
+    )
+    array = range(max(slope2d[0], slope2d[1]))
+    slope2d = normalize(slope2d)
+    for index in array:
+        active_cells.add((
+            floor(index * slope2d[0]) + a[0],
+            floor(index * slope2d[1]) + a[1]
+        ))
+
 def userDraggedLeft(event):
     global prev_cell
     x = event.x - viewport_location[0]
@@ -91,6 +114,7 @@ def userDraggedLeft(event):
     gridX = floor(x / zoom)
     gridY = floor(y / zoom)
     if (prev_cell != (gridX, gridY)):
+        # fillCellsBetween(prev_cell, (gridX, gridY))
         userLeftClicked(event)
 
 
