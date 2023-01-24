@@ -55,11 +55,10 @@ def updateZoom(event):
     # move viewport location to keep camera in the same place
     viewport_location = scalePointFrom(viewport_location, (0, 0), ratio)
 
-    # scale viewport location relative to the actual center of the viewport
-    screen = (canvas.winfo_width(), canvas.winfo_height())
+    # scale viewport location relative mouse pointer
     center = (
-        (viewport_location[0] + screen[0]/2), # X
-        (viewport_location[1] + screen[1]/2)  # Y
+        (viewport_location[0] + event.x), # X
+        (viewport_location[1] + event.y)  # Y
     )
     viewport_location = scalePointFrom(viewport_location, center, ratio)
 
