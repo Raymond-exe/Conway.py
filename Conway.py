@@ -83,7 +83,6 @@ def userLeftClicked(event):
     prev_cell = cell
     drawGrid()
 
-# TODO make this work
 def fillCellsBetween(a, b):
     def distanceBetween(a, b):
         x = b[0] - a[0]
@@ -161,7 +160,6 @@ active_cells = set() # each active cell is stored as a tuple
 ghost_cells_1 = set()
 ghost_cells_2 = set()
 
-# TODO make this work
 def drawGrid():
     global canvas, viewport_location, active_cells, ghost_cells_1, ghost_cells_2, zoom
     canvas.delete("all")
@@ -213,6 +211,25 @@ def drawGrid():
             viewport_location[1] + (cell[1]+1)*zoom, # bottom edge
             fill=color_ghosts[1], outline=color_lines)
 
+def viewportBounds():
+    global canvas, viewport_location, zoom
+    cellWidth = canvas.winfo_width() / zoom
+    cellHeight = canvas.winfo_height() / zoom
+
+    max = (
+        viewport_location[0] + cellWidth,  # X
+        viewport_location[1] + cellHeight, # Y
+    )
+
+    return {
+        'min': viewport_location,
+        'max': max
+    }
+
+def pointWithin(point, bounds = viewportBounds()):
+    xBounded = point[0] > bounds.min[0] and point[0] < bounds.max[0]
+    yBounded = point[1] > bounds.min[1] and point[1] < bounds.max[1]
+    return xBounded and yBounded
 
 
 def getNeighbors(cell):
