@@ -65,9 +65,6 @@ def updateZoom(event):
     # draw grid
     drawGrid()
 
-def roundTo(roundee, rounder):
-    return rounder * round(roundee/rounder)
-
 
 #################### CELL TOGGLING SETUP ####################
 prev_cell = (0, 0)
@@ -133,7 +130,6 @@ def userDraggedLeft(event):
 
 
 #################### RIGHT-CLICK DRAG MOVEMENT SETUP ####################
-
 right_click = False # True if right click was already being held down
 prev_right_click_location = (0, 0)
 def userDraggedRight(event):
@@ -155,7 +151,6 @@ def userReleasedRightClick(event):
 
 
 #################### GRID SETUP ####################
-
 active_cells = set() # each active cell is stored as a tuple
 ghost_cells_1 = set()
 ghost_cells_2 = set()
@@ -256,16 +251,19 @@ def countLiving(cellSet):
 def updateGrid(event):
     global active_cells, ghost_cells_1, ghost_cells_2
     nextGen = set()
+    checked = set()
     for cell in active_cells:
-        neighbors = getNeighbors(cell)
-        liveNeighbors = countLiving(neighbors)-1 # this -1 is to avoid counting this cell itself
 
         # life loop: decides if a cell should be brought to life
+        neighbors = getNeighbors(cell)
         for n in neighbors:
-            if n not in active_cells and countLiving(getNeighbors(n)) == 3:
+            if n in checked or n in active_cells: continue
+            if countLiving(getNeighbors(n)) == 3:
                 nextGen.add(n)
+            checked.add(n)
 
         # death loop: decides if a cell should die
+        liveNeighbors = countLiving(neighbors)-1 # this -1 is to avoid counting this cell itself
         if liveNeighbors == 2 or liveNeighbors == 3:
             nextGen.add(cell)
 
