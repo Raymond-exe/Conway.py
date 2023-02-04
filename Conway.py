@@ -1,17 +1,25 @@
 from math import floor, sqrt
 import tkinter
 
-# Color options
-color_background = "dim gray"
-color_lines = "gray"
-color_cells = "white"
+settings = {
+    'Visual': {
+        'Minimum zoom': 1,
+        'Maximum zoom': 250,
+        # TODO add zoom linearization
 
-# Ghost options
-ghost = False
-color_ghosts = [
-    "light gray",
-    "dark gray"
-]
+        'Background Color': 'dim gray',
+        'Cell Color': 'white',
+        'Line Color': 'gray',
+
+        'Cell Ghosting': True, # TODO turn into an int-based setting
+        'Ghost Color #1': 'light gray',
+        'Ghost Color #2': 'dark gray',
+    },
+    'Controls': {
+        'Center zoom on cursor': False,
+        # TODO add keybind options
+    }
+}
 
 # quick reference resources
 # https://pythonbasics.org/tkinter-canvas/
@@ -22,19 +30,17 @@ tk = tkinter.Tk()
 
 #################### FRAME SETUP ####################
 tk.title("Conway.py  |  A Python simulation of Conway's Game of Life")
-frame = tkinter.Frame(bg=color_background, width=750, height=500, bd=0)
+frame = tkinter.Frame(bg=settings['Visual']['Background Color'], width=750, height=500, bd=0)
 frame.pack()
 
 
 #################### CANVAS SETUP ####################
-canvas = tkinter.Canvas(frame, bg=color_background, width=750, height=500, highlightthickness=3, highlightbackground=color_lines)
+canvas = tkinter.Canvas(frame, bg=settings['Visual']['Background Color'], width=750, height=500, highlightthickness=3, highlightbackground=settings['Visual']['Line Color'])
 canvas.pack()
 
 
 #################### ZOOM SETUP ####################
-zoom = 25 # zoom resolution of the grid
-MIN_ZOOM = 1
-MAX_ZOOM = 250
+zoom = 25 # (the size of grid cells in pixels)
 viewport_location = (0, 0)
 
 def scalePointFrom(pt, origin, scale):
@@ -43,23 +49,26 @@ def scalePointFrom(pt, origin, scale):
     return (round(x), round(y))
 
 def updateZoom(event):
-    global canvas, viewport_location, zoom
+    global canvas, viewport_location, settings, zoom
 
-    # change zoom
+    # update + cap zoom
     old = zoom
     zoom += event.delta
-    zoom = min(zoom, MAX_ZOOM)
-    zoom = max(zoom, MIN_ZOOM)
+    zoom = min(zoom, settings['Visual']['Maximum zoom'])
+    zoom = max(zoom, settings['Visual']['Minimum zoom'])
     ratio = zoom / old
 
     # move viewport location to keep camera in the same place
     viewport_location = scalePointFrom(viewport_location, (0, 0), ratio)
 
-    # scale viewport location relative mouse pointer
-    center = (
-        (viewport_location[0] + event.x), # X
-        (viewport_location[1] + event.y)  # Y
-    )
+    # scale viewport location relative mouse pointer (if enabled)
+    if settings['Controls']['Center zoom on cursor']:
+        center = (
+            (viewport_location[0] + event.x), # X
+            (viewport_location[1] + event.y)  # Y
+        )
+    else:
+        center = () # TODO calculate center of screen
     viewport_location = scalePointFrom(viewport_location, center, ratio)
 
     # draw grid
@@ -175,7 +184,7 @@ def viewportBounds():
     }
 
 def drawGrid():
-    global canvas, viewport_location, active_cells, ghost_cells_1, ghost_cells_2, zoom
+    global canvas, viewport_location, active_cells, ghost_cells_1, ghost_cells_2, settings, zoom
     canvas.delete("all")
     width = canvas.winfo_width()
     height = canvas.winfo_height()
@@ -183,11 +192,11 @@ def drawGrid():
     if zoom > 4:
         # draw vertical lines
         for x in range(viewport_location[0]%zoom - zoom, viewport_location[0]%zoom + width, zoom):
-            canvas.create_line(x, 0, x, height, fill=color_lines, width=1)
+            canvas.create_line(x, 0, x, height, fill=settings['Visual']['Line Color'], width=1)
 
         # draw horizontal lines
         for y in range(viewport_location[1]%zoom - zoom, viewport_location[1]%zoom + height, zoom):
-            canvas.create_line(0, y, width, y, fill=color_lines, width=1)
+            canvas.create_line(0, y, width, y, fill=settings['Visual']['Line Color'], width=1)
 
     # draw X & Y axis
     canvas.create_line(0, viewport_location[1], width, viewport_location[1], fill="red", width=1) # x-axis
@@ -203,9 +212,9 @@ def drawGrid():
             viewport_location[1] + cell[1]*zoom,     # top edge
             viewport_location[0] + (cell[0]+1)*zoom, # right edge
             viewport_location[1] + (cell[1]+1)*zoom, # bottom edge
-            fill=color_cells, outline=color_lines if zoom > 1 else color_cells)
+            fill=settings['Visual']['Cell Color'], outline=settings['Visual']['Line Color'] if zoom > 1 else settings['Visual']['Cell Color'])
 
-    if not ghost: return
+    if not settings['Visual']['Cell Ghosting']: return
     for cell in ghost_cells_1:
         if cell in active_cells or not pointWithin(cell, bounds):
             continue
@@ -215,7 +224,7 @@ def drawGrid():
             viewport_location[1] + cell[1]*zoom,     # top edge
             viewport_location[0] + (cell[0]+1)*zoom, # right edge
             viewport_location[1] + (cell[1]+1)*zoom, # bottom edge
-            fill=color_ghosts[0], outline=color_lines if zoom > 1 else color_cells)
+            fill=settings['Visual']['Ghost Color #1'], outline=settings['Visual']['Line Color'] if zoom > 1 else settings['Visual']['Cell Color'])
 
     for cell in ghost_cells_2:
         if cell in active_cells or cell in ghost_cells_1 or not pointWithin(cell, bounds):
@@ -226,7 +235,7 @@ def drawGrid():
             viewport_location[1] + cell[1]*zoom,     # top edge
             viewport_location[0] + (cell[0]+1)*zoom, # right edge
             viewport_location[1] + (cell[1]+1)*zoom, # bottom edge
-            fill=color_ghosts[1], outline=color_lines)
+            fill=settings['Visual']['Ghost Color #2'], outline=settings['Visual']['Line Color'])
 
 def pointWithin(point, bounds = viewportBounds()):
     xBounded = point[0] >= bounds.get('min')[0]-1 and point[0] < bounds.get('max')[0]
@@ -267,7 +276,7 @@ def updateGrid(event):
         if liveNeighbors == 2 or liveNeighbors == 3:
             nextGen.add(cell)
 
-    if (ghost):
+    if (settings['Visual']['Cell Ghosting']):
         ghost_cells_2 = ghost_cells_1
         ghost_cells_1 = active_cells
     active_cells = nextGen
