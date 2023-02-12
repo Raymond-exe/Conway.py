@@ -68,7 +68,10 @@ def updateZoom(event):
             (viewport_location[1] + event.y)  # Y
         )
     else:
-        center = () # TODO calculate center of screen
+        center = (
+            (viewport_location[0] + canvas.winfo_width() / 2),
+            (viewport_location[1] + canvas.winfo_height() / 2)
+        )
     viewport_location = scalePointFrom(viewport_location, center, ratio)
 
     # draw grid
