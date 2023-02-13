@@ -33,7 +33,7 @@ Features:
 - [ ] Add UI buttons below simulation canvas for pause/play.
 - [ ] Add UI buttons for speed control.
 - [ ] Customizable color themes.
-- [ ] Screen-space rendering
+- [X] Screen-space rendering
 - [ ] "Old" screen effects + viewport warp?
 
 Bugs:

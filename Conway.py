@@ -5,7 +5,7 @@ settings = {
     'Visual': {
         'Minimum zoom': 1,
         'Maximum zoom': 250,
-        # TODO add zoom linearization
+        # TODO add zoom linearization option
 
         'Background Color': 'dim gray',
         'Cell Color': 'white',
@@ -14,9 +14,11 @@ settings = {
         'Cell Ghosting': True, # TODO turn into an int-based setting
         'Ghost Color #1': 'light gray',
         'Ghost Color #2': 'dark gray',
+
+        'Only render visible cells': False, # TODO test with + without setting enabled
     },
     'Controls': {
-        'Center zoom on cursor': False,
+        'Center zoom on cursor': True,
         # TODO add keybind options
     }
 }
@@ -172,18 +174,15 @@ def viewportBounds():
     screenCellWidth = canvas.winfo_width() / zoom
     screenCellHeight = canvas.winfo_height() / zoom
 
-    min = (
-        -viewport_location[0] / zoom, # X
-        -viewport_location[1] / zoom  # Y
-    )
-    max = (
-        min[0] + screenCellWidth,  # X
-        min[1] + screenCellHeight, # Y
-    )
-
     return {
-        'min': min,
-        'max': max
+        'min': (
+            -viewport_location[0] / zoom, # X
+            -viewport_location[1] / zoom  # Y
+        ),
+        'max': (
+            min[0] + screenCellWidth,  # X
+            min[1] + screenCellHeight, # Y
+        )
     }
 
 def drawGrid():
@@ -209,7 +208,7 @@ def drawGrid():
 
     # draw cells from active_cells set
     for cell in active_cells:
-        if (not pointWithin(cell, bounds)): continue
+        if (settings['Visual']['Only render visible cells'] and not pointWithin(cell, bounds)): continue
         canvas.create_rectangle(
             viewport_location[0] + cell[0]*zoom,     # left edge
             viewport_location[1] + cell[1]*zoom,     # top edge
