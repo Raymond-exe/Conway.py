@@ -10,6 +10,7 @@ settings = {
         'Background Color': 'dim gray',
         'Cell Color': 'white',
         'Line Color': 'gray',
+        'Selection Color': 'dark gray', # TODO make this work
 
         'Cell Ghosting': True, # TODO turn into an int-based setting
         'Ghost Color #1': 'light gray',
@@ -174,14 +175,14 @@ def viewportBounds():
     screenCellWidth = canvas.winfo_width() / zoom
     screenCellHeight = canvas.winfo_height() / zoom
 
+    x = -viewport_location[0] / zoom
+    y = -viewport_location[1] / zoom
+
     return {
-        'min': (
-            -viewport_location[0] / zoom, # X
-            -viewport_location[1] / zoom  # Y
-        ),
+        'min': (x, y),
         'max': (
-            min[0] + screenCellWidth,  # X
-            min[1] + screenCellHeight, # Y
+            x + screenCellWidth,  # X
+            y + screenCellHeight, # Y
         )
     }
 
@@ -216,6 +217,9 @@ def drawGrid():
             viewport_location[1] + (cell[1]+1)*zoom, # bottom edge
             fill=settings['Visual']['Cell Color'], outline=settings['Visual']['Line Color'] if zoom > 1 else settings['Visual']['Cell Color'])
 
+    # TODO Show selected cell (currently under the mouse cursor)
+
+    # Cell ghosting
     if not settings['Visual']['Cell Ghosting']: return
     for cell in ghost_cells_1:
         if cell in active_cells or not pointWithin(cell, bounds):
