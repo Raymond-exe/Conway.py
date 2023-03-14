@@ -10,6 +10,7 @@ settings = {
         'Background Color': 'dim gray',
         'Cell Color': 'white',
         'Line Color': 'gray',
+        'Selection Color': 'dark gray', # TODO make this work
 
         'Cell Ghosting': True, # TODO turn into an int-based setting
         'Ghost Color #1': 'light gray',
@@ -19,7 +20,7 @@ settings = {
     },
     'Controls': {
         'Center zoom on cursor': True,
-        # TODO add keybind options
+        # TODO add more keybind options
     }
 }
 
@@ -76,7 +77,6 @@ def updateZoom(event):
         )
     viewport_location = scalePointFrom(viewport_location, center, ratio)
 
-    # draw grid
     drawGrid()
 
 
@@ -165,7 +165,8 @@ def userReleasedRightClick(event):
 
 
 #################### GRID SETUP ####################
-active_cells = set() # each active cell is stored as a tuple
+# cells are stored as tuples in the below sets
+active_cells = set()
 ghost_cells_1 = set()
 ghost_cells_2 = set()
 
@@ -174,14 +175,14 @@ def viewportBounds():
     screenCellWidth = canvas.winfo_width() / zoom
     screenCellHeight = canvas.winfo_height() / zoom
 
+    x = -viewport_location[0] / zoom
+    y = -viewport_location[1] / zoom
+
     return {
-        'min': (
-            -viewport_location[0] / zoom, # X
-            -viewport_location[1] / zoom  # Y
-        ),
+        'min': (x, y),
         'max': (
-            min[0] + screenCellWidth,  # X
-            min[1] + screenCellHeight, # Y
+            x + screenCellWidth,  # X
+            y + screenCellHeight, # Y
         )
     }
 
@@ -192,15 +193,15 @@ def drawGrid():
     height = canvas.winfo_height()
 
     if zoom > 4:
-        # draw vertical lines
+        # vertical grid lines
         for x in range(viewport_location[0]%zoom - zoom, viewport_location[0]%zoom + width, zoom):
             canvas.create_line(x, 0, x, height, fill=settings['Visual']['Line Color'], width=1)
 
-        # draw horizontal lines
+        # horizontal grid lines
         for y in range(viewport_location[1]%zoom - zoom, viewport_location[1]%zoom + height, zoom):
             canvas.create_line(0, y, width, y, fill=settings['Visual']['Line Color'], width=1)
 
-    # draw X & Y axis
+    # X & Y axis
     canvas.create_line(0, viewport_location[1], width, viewport_location[1], fill="red", width=1) # x-axis
     canvas.create_line(viewport_location[0], 0, viewport_location[0], height, fill="lime green", width=1) # y-axis
 
@@ -216,6 +217,9 @@ def drawGrid():
             viewport_location[1] + (cell[1]+1)*zoom, # bottom edge
             fill=settings['Visual']['Cell Color'], outline=settings['Visual']['Line Color'] if zoom > 1 else settings['Visual']['Cell Color'])
 
+    # TODO Show selected cell (currently under the mouse cursor)
+
+    # Cell ghosting
     if not settings['Visual']['Cell Ghosting']: return
     for cell in ghost_cells_1:
         if cell in active_cells or not pointWithin(cell, bounds):
@@ -282,7 +286,6 @@ def updateGrid(event):
         ghost_cells_2 = ghost_cells_1
         ghost_cells_1 = active_cells
     active_cells = nextGen
-    # print("Active cells: ", len(active_cells))
     drawGrid()
 
 def reset(event):
