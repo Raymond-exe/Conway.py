@@ -1,4 +1,5 @@
 from math import floor, sqrt
+from threading import Timer
 import tkinter
 
 settings = {
@@ -288,7 +289,7 @@ def updateGrid(event):
     active_cells = nextGen
     drawGrid()
 
-def reset(event):
+def reset(event = None):
     global active_cells, viewport_location, ghost_cells_1, ghost_cells_2, canvas, zoom
     ghost_cells_1 = set()
     ghost_cells_2 = set()
@@ -310,4 +311,5 @@ tk.bind("<Button-5>", updateZoom)   # Linux
 tk.bind("<space>", updateGrid)
 tk.bind("r", reset)
 
+Timer(0.1, reset, ()).start()
 tk.mainloop()
