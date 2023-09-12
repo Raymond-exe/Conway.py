@@ -1,5 +1,4 @@
 from math import floor, sqrt
-from threading import Timer
 import tkinter
 
 settings = {
@@ -311,5 +310,5 @@ tk.bind("<Button-5>", updateZoom)   # Linux
 tk.bind("<space>", updateGrid)
 tk.bind("r", reset)
 
-Timer(0.1, reset, ()).start()
+tk.after(0, reset)
 tk.mainloop()
