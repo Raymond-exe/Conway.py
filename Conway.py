@@ -1,3 +1,5 @@
+import threading
+import time
 from math import floor, sqrt
 import tkinter
 
@@ -20,6 +22,7 @@ settings = {
     },
     'Controls': {
         'Center zoom on cursor': True,
+        'Auto-play': False,
         # TODO add more keybind options
     }
 }
@@ -263,7 +266,7 @@ def countLiving(cellSet):
     return living
 
 # TODO optimize
-def updateGrid(event):
+def updateGrid(event = None):
     global active_cells, ghost_cells_1, ghost_cells_2
     nextGen = set()
     checked = set()
@@ -311,4 +314,15 @@ tk.bind("<space>", updateGrid)
 tk.bind("r", reset)
 
 tk.after(0, reset)
+
+# TODO fix visual bug causing lines to blink when auto-updating
+if settings['Controls']['Auto-play']:
+    def autoUpdate():
+        while True:
+            try: updateGrid()
+            except: print("Failed to update grid, continuing...")
+            time.sleep(0.15)
+    t = threading.Thread(target=autoUpdate)
+    tk.after(1, t.start)
+
 tk.mainloop()
